@@ -39,6 +39,9 @@ public class TTTClientTalker extends Thread {
 	private ServerCommunication comms = new ServerCommunication();
 	private ClientMessages pMSG = new ClientMessages();
 	private LinkedList<String> swingUtilMsg =  new LinkedList<String>();
+	
+//variable to determine which players details are being process during setup
+	private int pDetail;
 
 //-----------------------------------------------------------------------------------//	
 	public TTTClientTalker(InetAddress serverIP, int serverPort,
@@ -47,6 +50,7 @@ public class TTTClientTalker extends Thread {
 		this.serverPort = serverPort;
 		this.interComm = interComm;
 		this.viewer = viewer;
+		this.pDetail = 0;
 	}
 
 //make this swing util friendly
@@ -158,10 +162,9 @@ public class TTTClientTalker extends Thread {
 			piece = m.group(2);
 			victories = m.group(3);
 			
-			setPlayerInfo(name, piece, victories);
 			msg = "Starting game. You are ";
 			
-			if(myName.equals(name)) {
+			if(this.pDetail == 0) {
 				interComm.setMyPiece(piece.charAt(0));
 				interComm.setOtherPiece(otherTurnPiece());
 				if(piece.charAt(0) == CROSS) {
@@ -169,8 +172,15 @@ public class TTTClientTalker extends Thread {
 				} else {
 					msg += "NOUGHTS";
 				}
+				if(!myName.equals(name)) {
+					givePlayerMSG("You and the other player have the same name.\n"
+							+"So we have altered your name to: "+name);
+					interComm.setName(name);
+				}
 				givePlayerMSG(msg);
+				this.pDetail++;
 			}
+			setPlayerInfo(name, piece, victories);
 		}
 	}
 
