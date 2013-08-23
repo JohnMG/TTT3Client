@@ -2,6 +2,8 @@
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.*;
 import java.util.LinkedList;
@@ -9,7 +11,9 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 
 
 public class TTTClientControl {
@@ -141,6 +145,12 @@ public class TTTClientControl {
 			serverTalk = new TTTClientTalker(serverIP, serverPort, interComm, view);
 			serverTalk.start();
 			
+			view.boardFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			view.boardFrame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					quitGame();
+				}
+			});
 		}
 		
 		

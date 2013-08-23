@@ -7,6 +7,7 @@
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 //import javax.swing.SwingUtilities;
 import javax.swing.JLabel;
 //import java.awt.event.*;

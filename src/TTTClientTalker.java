@@ -222,28 +222,30 @@ public class TTTClientTalker extends Thread {
 		
 		try {
 			input = inServer.readLine();
-			Pattern p = Pattern.compile(pattern);
-			Matcher m = p.matcher(input);
-			if(m.find()) {
-				g1 = m.group(1);
-				g2 = m.group(2);
-				
-				if(g1.equals(comms.sMove)) {
-					handleMove(g2);
-				} else if(g1.equals(comms.sPlay)) {
-					handleYourTurn();
-				} else if(g1.equals(comms.sWaitBegin)) {
-					handleNotTurn();
-				} else if(g1.equals(comms.sNew)) {
-					handleNewGame(g2);
-				} else if(g1.equals(comms.sReset)) {
-					handleReset(g2);
-				} else if(g1.equals(comms.sTheyQuit)) {
-					handleQuit();
-				} else if(g1.equals(comms.sEnd)) {
-					handleEnding(g2);
-				} else if(g1.equals(comms.sPDetail)) {
-					handleSPDetail(g2);
+			if(input != null) {
+				Pattern p = Pattern.compile(pattern);
+				Matcher m = p.matcher(input);
+				if(m.find()) {
+					g1 = m.group(1);
+					g2 = m.group(2);
+					
+					if(g1.equals(comms.sMove)) {
+						handleMove(g2);
+					} else if(g1.equals(comms.sPlay)) {
+						handleYourTurn();
+					} else if(g1.equals(comms.sWaitBegin)) {
+						handleNotTurn();
+					} else if(g1.equals(comms.sNew)) {
+						handleNewGame(g2);
+					} else if(g1.equals(comms.sReset)) {
+						handleReset(g2);
+					} else if(g1.equals(comms.sTheyQuit)) {
+						handleQuit();
+					} else if(g1.equals(comms.sEnd)) {
+						handleEnding(g2);
+					} else if(g1.equals(comms.sPDetail)) {
+						handleSPDetail(g2);
+					}
 				}
 			}
 		} catch(InterruptedIOException tiemout) {
