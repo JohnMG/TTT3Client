@@ -145,12 +145,6 @@ public class TTTClientControl {
 			serverTalk = new TTTClientTalker(serverIP, serverPort, interComm, view);
 			serverTalk.start();
 			
-			view.boardFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-			view.boardFrame.addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent e) {
-					quitGame();
-				}
-			});
 		}
 		
 		

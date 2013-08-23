@@ -1,3 +1,5 @@
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
@@ -7,6 +9,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 
 public class TTTClientTalker extends Thread {
@@ -87,6 +90,13 @@ public class TTTClientTalker extends Thread {
 					} catch (SocketException e) {
 						givePlayerMSG("Unable to set timeout");
 					}
+					
+					this.viewer.boardFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+					this.viewer.boardFrame.addWindowListener(new WindowAdapter() {
+						public void windowClosing(WindowEvent e) {
+							quitGame();
+						}
+					});
 				}
 				
 				sendMessages();
@@ -104,6 +114,9 @@ public class TTTClientTalker extends Thread {
 			} catch(IOException nonClose) {
 				givePlayerMSG("Can't close the connection");
 			}
+		} else {
+			givePlayerMSG("Bad Connection. Shutting down");
+			System.exit(0);
 		}
 	}
 
@@ -114,14 +127,16 @@ public class TTTClientTalker extends Thread {
 		String result = pMSG.NOTTURN;
 		
 		output = comms.cName+interComm.getName()+pMSG.NLINE;
+		
 		try {
 			//give your name to the server and then wait until
 			//it gives information about what piece you using
 			//as well as the name and piece of the other player
 			outServer.writeBytes(output);
-			while(input.equals(comms.sWaitName)) {
-				input = inServer.readLine();
-			}
+			input = inServer.readLine();
+			//this input receives the command of WAIT
+			
+			input = inServer.readLine();
 			handlePlayerDetail(input);
 			
 			input = inServer.readLine();
@@ -141,7 +156,7 @@ public class TTTClientTalker extends Thread {
 			
 		} catch(IOException nonStartCom) {
 			givePlayerMSG("Cannot communicate names");
-		}
+		} 
 		return result;
 	}
 
@@ -517,6 +532,11 @@ public class TTTClientTalker extends Thread {
 		return result;
 	}
 	
+	private void quitGame() {
+		if(this.interComm.getConnect().isConnected()) {
+			this.interComm.addMsgToSend(comms.cQuit+pMSG.NLINE);
+		}
+	}
 }
 
 //LINKED LIST IS FIFO
