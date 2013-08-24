@@ -83,8 +83,12 @@ public class TTTClientTalker extends Thread {
 					playMSG = setUpPartTwo();						
 					setUp2 = true;
 					
-					activateMainButtons();
-					givePlayerMSG(playMSG);
+					if(!interComm.getQuit()) {
+						activateMainButtons();
+						givePlayerMSG(playMSG);
+					} else {
+						givePlayerMSG(pMSG.TOOMANY);
+					}
 					try {
 						client.setSoTimeout(1000);
 					} catch (SocketException e) {
@@ -134,25 +138,29 @@ public class TTTClientTalker extends Thread {
 			//as well as the name and piece of the other player
 			outServer.writeBytes(output);
 			input = inServer.readLine();
-			//this input receives the command of WAIT
-			
-			input = inServer.readLine();
-			handlePlayerDetail(input);
-			
-			input = inServer.readLine();
-			handlePlayerDetail(input);
-			
-			output = comms.scOK+pMSG.NLINE;
-			outServer.writeBytes(output);
-			
-			input = inServer.readLine();
-			if(input.equals(comms.sPlay)) {
-				interComm.setCurrentPiece(interComm.getMyPiece());
-				result = pMSG.YOURTURN;
-			} else if(input.equals(comms.sWaitMove)) {
-				interComm.setCurrentPiece(interComm.getOtherPiece());
-				result = pMSG.NOTTURN;
+			//this input receives the command of WAIT or REJECT
+			if(!input.equals(comms.sReject)) {
+				input = inServer.readLine();
+				handlePlayerDetail(input);
+				
+				input = inServer.readLine();
+				handlePlayerDetail(input);
+				
+				output = comms.scOK+pMSG.NLINE;
+				outServer.writeBytes(output);
+				
+				input = inServer.readLine();
+				if(input.equals(comms.sPlay)) {
+					interComm.setCurrentPiece(interComm.getMyPiece());
+					result = pMSG.YOURTURN;
+				} else if(input.equals(comms.sWaitMove)) {
+					interComm.setCurrentPiece(interComm.getOtherPiece());
+					result = pMSG.NOTTURN;
+				}
+			} else {
+				interComm.setQuit(true);
 			}
+			
 			
 		} catch(IOException nonStartCom) {
 			givePlayerMSG("Cannot communicate names");
@@ -535,6 +543,8 @@ public class TTTClientTalker extends Thread {
 	private void quitGame() {
 		if(this.interComm.getConnect().isConnected()) {
 			this.interComm.addMsgToSend(comms.cQuit+pMSG.NLINE);
+		} else {
+			System.exit(0);
 		}
 	}
 }

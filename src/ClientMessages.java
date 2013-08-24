@@ -22,5 +22,7 @@ public class ClientMessages {
 	public final String NLINE = "\n";
 	public final String SETUP = "Please wait while we set up the board and find another player!";
 	public final String GAMEEND = "The game has ended. No further moves can be made";
+	public final String TOOMANY = "There are too many players on the server right now\n" +
+			"Please try again later.";
 
 }

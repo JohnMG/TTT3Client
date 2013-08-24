@@ -20,6 +20,8 @@ public class ServerCommunication {
 	public String sReset = "RESET:";
 	public String sTheyQuit = "QUIT:";
 	
+	public String sReject = "REJECT:";
+	
 	//Client messages
 	public String cName = "PLAYERNAME:";
 	public String cMove = "MOVE:";
