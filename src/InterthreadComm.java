@@ -1,21 +1,35 @@
+/* Author: John Massy-Greene
+ * Program: TicTacTo 3.0
+ * New Functionality: Internet Capability
+ * Date: 25/8/13
+ * Comment: In the context of MVC design, this is part of the controller. The other part
+ * 			of the controller is TTTClientControl. This is the bridge between what the server is
+ *          sending to TTTClientTalker and what the player has done to the view with TTTClientControl
+ */
+
+
 import java.net.Socket;
 import java.util.LinkedList;
 
 
 public class InterthreadComm {
-	
+
+//final global constants
 	private final char NOUGHT = '0';
 	private final char CROSS = 'X';
 	
+//variables for name and whether the game is ending or if someone is quitting
 	private String name;
 	private boolean quitter;
 	private boolean endGame;
 	
+//a linked list of the messages that the client needs to send to the server
 	private LinkedList<String> msgToSend;
 	private char myPiece; 
 	private char otherPiece;
 	//use the piece to keep track of whose move
 	private char currentTurnPiece;
+	//boolean array to check if New game(N) or Reset(R) has been called
 	private boolean[] NRCalled = {false, false};
 	
 	private Socket connect;
@@ -28,7 +42,7 @@ public class InterthreadComm {
 	}
 	
 	
-	
+//getters and setters
 	public String getName() {
 		return this.name;
 	}

@@ -1,3 +1,12 @@
+/*
+ * Author: John Massy-Greene
+ * Program: TicTacTo 3.0 - Internet Multiplayer - Client
+ * Date: 25/8/13
+ * Comments: In an MVC design this would be the part of the model. It is the part of the program
+ * That communicates the actions of the player to the server. And tells the controller what the server
+ * has sent to it
+ */
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -56,7 +65,8 @@ public class TTTClientTalker extends Thread {
 		this.pDetail = 0;
 	}
 
-//make this swing util friendly
+//this is the main part of the program. The model is a thread that is run from the
+//controller
 	public void run() {
 		boolean properConnect = false;
 		try {
@@ -67,34 +77,40 @@ public class TTTClientTalker extends Thread {
 					new InputStreamReader(client.getInputStream()));
 			outServer = new DataOutputStream(client.getOutputStream());
 			properConnect = true;
-		
+		//establishing a connection with the server
 		} catch(IOException noConn2) {
 			properConnect = false;
 		}
 		
 		if(properConnect) {
 			boolean setUp2 = false;
-			//need to add the boolean condition for quitter here
+			
 			while((client.isConnected()) && (!interComm.getQuit())) {
 				if(setUp2 == false) {
+//this part of the while loop only runs once. When the connection has been established with
+//the server the names of each player are communicated as well as who is noughts, crosses and
+//who goes first
 					String playMSG = "";
 					givePlayerMSG(pMSG.SETUP);
 					
 					playMSG = setUpPartTwo();						
 					setUp2 = true;
-					
+//activate the board after setup has been done					
 					if(!interComm.getQuit()) {
 						activateMainButtons();
 						givePlayerMSG(playMSG);
 					} else {
 						givePlayerMSG(pMSG.TOOMANY);
 					}
+//the socket is set to a timeout of 1 second. So the inputStreamReader doesn't block indefinately
 					try {
 						client.setSoTimeout(1000);
 					} catch (SocketException e) {
 						givePlayerMSG("Unable to set timeout");
 					}
-					
+
+//this sets the default closing operation of the frame. So that when the user closes it, the model
+//tells the server first and then shuts down.
 					this.viewer.boardFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 					this.viewer.boardFrame.addWindowListener(new WindowAdapter() {
 						public void windowClosing(WindowEvent e) {
@@ -102,7 +118,8 @@ public class TTTClientTalker extends Thread {
 						}
 					});
 				}
-				
+	
+//the main part of the server client communication. Sending messages and receiving messages
 				sendMessages();
 				if(!interComm.getQuit()) {
 					receiveMessages();
@@ -124,7 +141,12 @@ public class TTTClientTalker extends Thread {
 		}
 	}
 
-	
+/*this is second part of the setting up of the game.
+ * it involves the communicating of the players name to the server.
+ * the server depending on if its full or not will tell the player to wait or send a rejection
+ * then it will send the name of the other player as well as who is noughts and crosses
+ * and who goes first.
+ */
 	private String setUpPartTwo() {
 		String input = comms.sWaitName;
 		String output;
@@ -145,10 +167,12 @@ public class TTTClientTalker extends Thread {
 				
 				input = inServer.readLine();
 				handlePlayerDetail(input);
-				
+//lets the server know that the client has correctly received the
+//each players details
 				output = comms.scOK+pMSG.NLINE;
 				outServer.writeBytes(output);
-				
+//if the server tells the client to play then its their turn
+//otherwise it is the other players turn and they need to wait
 				input = inServer.readLine();
 				if(input.equals(comms.sPlay)) {
 					interComm.setCurrentPiece(interComm.getMyPiece());
@@ -158,6 +182,7 @@ public class TTTClientTalker extends Thread {
 					result = pMSG.NOTTURN;
 				}
 			} else {
+//if the server has sent a rejection then the player must quit.
 				interComm.setQuit(true);
 			}
 			
@@ -168,7 +193,7 @@ public class TTTClientTalker extends Thread {
 		return result;
 	}
 
-
+//function for handling of the players details when the game first starts
 	private void handlePlayerDetail(String info) {
 		String patterName = "^PLAYERDETAIL:(\\w+):([XO]):(\\d+)$";
 		String name;
@@ -180,13 +205,18 @@ public class TTTClientTalker extends Thread {
 		Matcher m = p.matcher(info);
 		if(m.find()) {
 			String myName = interComm.getName();
-			
+
+//the details of each player includes their name, piece and victories
+//the programmer realises that victories aren't really needed here
+//however protocol for sending player information has been streamlined
+//for the sake of programming simplicity.
 			name = m.group(1);
 			piece = m.group(2);
 			victories = m.group(3);
 			
 			msg = "Starting game. You are ";
-			
+//since the first player details that the server sends is the players own then
+//this gives the controller the information of which player is NOUGHTS and CROSSES
 			if(this.pDetail == 0) {
 				interComm.setMyPiece(piece.charAt(0));
 				interComm.setOtherPiece(otherTurnPiece());
@@ -195,6 +225,9 @@ public class TTTClientTalker extends Thread {
 				} else {
 					msg += "NOUGHTS";
 				}
+//If the first player detail's name is not the same as the name recorded by the controller
+//it simply means that the other player has chosen the same name so the server has
+//differentiated each player which a single digit at the end of their name.
 				if(!myName.equals(name)) {
 					givePlayerMSG("You and the other player have the same name.\n"
 							+"So we have altered your name to: "+name);
@@ -207,20 +240,24 @@ public class TTTClientTalker extends Thread {
 		}
 	}
 
-	
+//function for extracting the player information from the server and then diplaying
+//it in the view
 	private void setPlayerInfo(String pname, String piece, String vic) {
 		String pnv = "Piece: "+piece+" Won: "+vic+" times";
 		String playerMsg =
 				BORDERB+pname+ENDBBR+pnv+EBORDER;
 		String name = interComm.getName();
-		
+//always display the opponents name second.		
 		if(name.equals(pname)) {
 			setPlayerText(PLAYERONE, playerMsg);
 		} else {
 			setPlayerText(PLAYERTWO, playerMsg);
 		}
 	}
-	
+
+//Method for sending the server messages. Messages are obtained from the InterThreadComm controller
+//who has been given messages to send from TTTClientControl depending on which buttons the player has
+//pressed.
 	public void sendMessages() {
 		String output;
 		try {
@@ -236,7 +273,9 @@ public class TTTClientTalker extends Thread {
 			givePlayerMSG("Can't send to server");
 		}
 	}
-	
+
+//method for receiving messages from the server and then
+//depending on their contents executing a certain course of action
 	public void receiveMessages() {
 		String input;
 		String g1;
@@ -277,7 +316,8 @@ public class TTTClientTalker extends Thread {
 			givePlayerMSG("Cannot receceive msg");
 		}
 	}
-	
+
+//function to handle moves from the opponent
 	private void handleMove(String g2) {
 		String pattern = "(^[0-9]$)";
 		Pattern p = Pattern.compile(pattern);
@@ -292,6 +332,7 @@ public class TTTClientTalker extends Thread {
 		}
 	}
 	
+//the server will let the player know when it is their turn.
 	private void handleYourTurn() {
 		givePlayerMSG(pMSG.YOURTURN);
 		if(interComm.getEnd()) {
@@ -299,6 +340,10 @@ public class TTTClientTalker extends Thread {
 			interComm.setCurrentPiece(interComm.getMyPiece());
 		}
 	}
+	
+//this function isn't really used outside of new games and resets. Its to let the player
+//know that it is their opponents turn.
+	
 	private void handleNotTurn() {
 		givePlayerMSG(pMSG.NEWNOTTURN);
 		if(interComm.getEnd()) {
@@ -306,15 +351,17 @@ public class TTTClientTalker extends Thread {
 			interComm.setCurrentPiece(interComm.getOtherPiece());
 		}
 	} 
-	
+
+//the code for the new game and reset handling is the same with the exception of the
+//variables they use or need.
 	private void handleNewGame(String g2) {
 		NRHandler(g2, pMSG.NEWGAMEDIALOG, comms.cNew, pMSG.OTHERYESNEW, pMSG.OTHERNONEW, 0);
 	}
-	
 	private void handleReset(String g2) {
 		NRHandler(g2, pMSG.RESETDIALOG, comms.cReset, pMSG.OTHERYESRESET, pMSG.OTHERNORESET, 1);
 	}
-	
+
+//lets the player know that their opponent has quit.
 	private void handleQuit() {
 		for(int i = 0; i<NUMSQUARES; i++) {
 			activateButtons(SQUAREBUTTON, "false", i);
@@ -323,7 +370,8 @@ public class TTTClientTalker extends Thread {
 		activateButtons(RESETBUTTON, "false", 0);
 		givePlayerMSG(pMSG.OTHERQUIT);
 	}
-	
+
+//the server will tell the player when the game has ended
 	private void handleEnding(String g2) {
 		int vicType;
 		String msg;
@@ -332,12 +380,17 @@ public class TTTClientTalker extends Thread {
 		String pattern2 = "^(\\d+):([\\w\\s.!]+)$";
 		Pattern p = Pattern.compile(pattern);
 		Matcher m = p.matcher(g2);
-		
+	
+//if the first pattern has been found it means that one player has won
+//otherwise there has been a tie.
 		if(m.find()) {
 			vicType = Integer.parseInt(m.group(1));
 			msg = m.group(2);
 			vicPiece = m.group(3).charAt(0);
+//this sorta violates the MVC principles but this tells the view
+//how the game has ended and how to show that to the player
 			endTheGame(vicType, vicPiece);
+//lets the controller know the game has ended
 			this.interComm.setEnd(true);
 			givePlayerMSG(msg);
 			activateButtons(NEWBUTTON, "true", 0);
@@ -351,7 +404,8 @@ public class TTTClientTalker extends Thread {
 			}
 		}
 	}
-	
+
+//grabs the player details from the server to update the view.
 	private void handleSPDetail(String g2) {
 		String name;
 		String piece;
@@ -486,15 +540,20 @@ public class TTTClientTalker extends Thread {
 		
 	}
 
+//function that handles the reset and new game tasks that the server is telling the
+//client about
 	private void NRHandler(String g2, String dialog, String cMsg,
 			String OTHERYES, String OTHERNO, int nr) {
 		int answer = -1;
 		String msg;
+
+//if there is nothing in g2 it means that the server is telling the player
+//that their opponent wants either a new game or want to reset.
 		if(g2.equals("")) {
 			while(answer == -1) {
 				answer = givePlayerYNDialog(dialog);
 			}
-			
+//the player is give a yes/no dialog and their choice is then sent to the server.		
 			if(answer == 0) {
 				msg = comms.scOK;
 				resetTheBoard();
@@ -507,6 +566,9 @@ public class TTTClientTalker extends Thread {
 				msg = comms.scNOT;
 			}
 			interComm.addMsgToSend(cMsg+msg+pMSG.NLINE);
+//if g2 has either a OK or NOT message in it, it means that the server is telling
+//the client that their opponent is RESPONDING to a new game or reset that the player
+//asked for.
 		} else {
 			if(g2.equals(comms.scOK)) {
 				givePlayerMSG(OTHERYES);
@@ -522,14 +584,17 @@ public class TTTClientTalker extends Thread {
 			interComm.setNRCalled(nr, false);
 		}
 	}
-
+//activates the board buttons and the reset button
+//the newgame button is only accessible when a game has finished.
 	private void activateMainButtons() {
 		for(int i=0; i<NUMSQUARES; i++) {
 			activateButtons(SQUAREBUTTON, "true", i);
 		}
 		activateButtons(RESETBUTTON, "true", 0);
 	}
-	
+
+//tells the controller what piece your opponent has based upon
+//which piece the client has been given by the server
 	private char otherTurnPiece() {
 		char result;
 		if(interComm.getMyPiece() == NOUGHT) {
@@ -539,7 +604,9 @@ public class TTTClientTalker extends Thread {
 		}
 		return result;
 	}
-	
+//method to quit the game. If still connected to the server
+//then tell the server that your quitting and then shutdown.
+//if no connection then just shut down.
 	private void quitGame() {
 		if(this.interComm.getConnect().isConnected()) {
 			this.interComm.addMsgToSend(comms.cQuit+pMSG.NLINE);
@@ -548,5 +615,3 @@ public class TTTClientTalker extends Thread {
 		}
 	}
 }
-
-//LINKED LIST IS FIFO

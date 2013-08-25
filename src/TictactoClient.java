@@ -4,9 +4,8 @@
  * Author: John Massy-Greene
  * Program: TicTacTo 3.0 - Internet Multiplayer - Client
  * Date: 29/4/13
- * Comment: This client includes the functionality of
- *			TicTacTo2.0's TTTController class and extends it for networking
- *			Capability. Also requires the view 
+ * Comment: This is the start of the program. It calls to the controller and tells it
+ * 			to start running.
  */
 
 

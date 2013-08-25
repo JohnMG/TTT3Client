@@ -1,4 +1,11 @@
 
+/* Author: John Massy-Greene
+ * Program: TicTacTo 3.0
+ * New Functionality: Internet Capability
+ * Date: 25/8/13
+ * Comment: This is the messages that the player is given so they 
+ *          can be made aware of the state of the game
+*/
 
 public class ClientMessages {
 

@@ -3,26 +3,16 @@
  * Program: TicTacTo 3.0
  * New Functionality: Internet Capability
  * Date: 28/4/13
+ * Comment: In context of MVC design this is the view. This is what the player sees.
 */
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.WindowConstants;
-//import javax.swing.SwingUtilities;
 import javax.swing.JLabel;
-//import java.awt.event.*;
 import java.awt.Dimension;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
-//import javax.swing.AbstractButton;
-//import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-
-//TO DO: Find out the commands to make the JFrame resizeable
-
-//According to MVC, this is the view it represents how the users
-//see the data.
 
 public class TTTView {
 
@@ -83,7 +73,8 @@ public class TTTView {
 		initInitScreen();
 	}
 
-//the inital frame that is used to get the users Names
+//the inital frame that is used to get the user's name and the
+//information of the server they want to connect to(IP address and Port)
 	private void initBoardFrame() {
 		boardFrame = new JFrame();
 		boardFrame.setTitle("Noughts and Crosses");
@@ -109,8 +100,6 @@ public class TTTView {
 		panel.add(newGame);
 		
 		boardFrame.getContentPane().add(panel);
-		//String hello = JOptionPane.showInputDialog("SUP");
-		//System.out.println(hello);
 	}
 
 //this function sets up the frame that has the main game on it
@@ -155,9 +144,6 @@ public class TTTView {
 		panel2.add(portField);
 		panel2.add(connect);
 		initScreen.getContentPane().add(panel2);
-		
-		//TO DO: Set the default close operation to say that you cant do that without putting in names
-		//that or close the entire program
 	}
 	
 //this sets up the buttons required for the main game
@@ -173,6 +159,7 @@ public class TTTView {
 		newGame = new JButton("New Game");
 		newGame.setBounds(620, 155, (butWidth+10), butHeight);
 	}
+	
 //this function attempts to automate the setUp and placement of the
 //individual squares on the board
 	private void setUpSquare(JButton square, int i) {
@@ -192,6 +179,7 @@ public class TTTView {
 		playerTwo = new JLabel("Loading");
 		playerTwo.setBounds(600, 50, INFOWIDTH, INFOHEIGHT);
 	}
+	
 //helper function that uses an mathematical function to place the buttons
 	private int detStartPos(int i) {
 		i++;
@@ -279,7 +267,9 @@ public class TTTView {
 				break;
 		}
 	}
+	
 //helper function for endGame()	
+//it replaces the winning squares with an image of the NOUGHT or CROSS with a line through it
 	private void setSquares(ImageIcon A, ImageIcon B, char currentPlayer, int i) {
 		if(currentPlayer == NOUGHTS) {
 			squares[i].setIcon(A);
@@ -341,6 +331,7 @@ public class TTTView {
 	public JButton[] getButArray() {
 		return this.squares;
 	}
+//checks to see if a move has already been made on a square
 	public boolean isButtonTaken(JButton but) {
 		boolean result = true;
 		if(but.getIcon() == BLANK) {

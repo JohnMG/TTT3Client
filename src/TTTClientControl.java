@@ -1,9 +1,14 @@
-
+/*
+ * Author: John Massy-Greene
+ * Program: TicTacTo 3.0 - Internet Multiplayer - Client
+ * Date: 25/8/13
+ * Comments: In an MVC design this would be the part of the controller. It communicates between
+ * 			 with the view(to implement the players actions) and the class InterThreadComm which is
+ *           the other part of the controller.
+ */
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.*;
 import java.util.LinkedList;
@@ -11,9 +16,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.WindowConstants;
 
 
 public class TTTClientControl {
@@ -24,8 +27,10 @@ public class TTTClientControl {
 		private final int MINPORT = 1023;
 		private final int MAXPORT = 65536;
 		private final String DEFAULTIP = "localhost";
-		private final String DEFAULTPORT = "1040";
+		private final String DEFAULTPORT = "2064";
 		
+	//a class for the variety of messages that the controller needs to give to the
+	//player to let them know about the status of the game
 		private ClientMessages pMSG = new ClientMessages();
 		
 	//variables for establishing connection with a server
@@ -50,11 +55,14 @@ public class TTTClientControl {
 			defaultIPnPort();
 		}
 		
+		//starts the game for the player. Deactivate the buttons
+		//until they're ready to be used.
 		public void runZaProgramu() {
 			deactivateButtons();
 			this.view.boardFrame.setVisible(false);
 			this.view.initScreen.setVisible(true);
 		}
+		
 		
 		private void setUpButtonListeners() {
 			//this is the listener for the Ok button when the users first input their names
@@ -94,12 +102,15 @@ public class TTTClientControl {
 				}
 			});
 		}
+
 		
 		private void defaultIPnPort() {
 			view.setIP(DEFAULTIP);
 			view.setPort(DEFAULTPORT);
 		}
-		
+
+		//method for deactivating the buttons
+		//this really only happens at the end of a game or when the player quits.
 		private void deactivateButtons()  {
 			for(int i=0; i<NUMSQUARES; i++) {
 				view.getSquare(i).setEnabled(false);
@@ -108,7 +119,9 @@ public class TTTClientControl {
 			view.getNewgame().setEnabled(false);
 		}
 
-
+//This function takes in the IP address and the port number the player has supplied
+//and checks to see if 1) They are in the correct format 2) the player is able to connect
+//to a server with this information
 		private void getNameAndServer() {
 			String name = view.getName();
 			String ip = view.getIP();
@@ -125,6 +138,7 @@ public class TTTClientControl {
 					System.out.println("Cannot connect to this server");
 					
 				}
+				//if everything is valid and you can connect then continue to the main game
 				serverPort = Integer.parseInt(port);
 				view.initScreen.setVisible(false);
 				view.boardFrame.setVisible(true);
@@ -217,10 +231,10 @@ public class TTTClientControl {
 
 			return result;
 		}
-//This part involves communicating with the server about the players name
-//and attempting to find a partner and then getting their name.
 
-//make this send the info to InterthreadComm	
+//this is the function for when one of the tictacto buttons get pressed
+//it first checks to see if the game has ended. If the game is still going then it checks to
+//see if its the players turn and finally it checks to see if the square has already been taken.
 		private void boardButtonClicked(JButton clickBut) {
 			if(!interComm.getEnd()) {
 				if(interComm.getCurrentPiece() == interComm.getMyPiece()) {
@@ -239,6 +253,9 @@ public class TTTClientControl {
 			}
 		}
 
+//function to quit the game. Before quitting the game and shutting down the server
+//it sends a message to the server saying it wants to quit which in turn tells the other
+//player that their opponent is quitting. If there is no connection the game can shutdown immediately
 		private void quitGame() {
 			if(interComm.getConnect().isConnected()) {
 				interComm.addMsgToSend(communication.cQuit+pMSG.NLINE);
@@ -247,7 +264,8 @@ public class TTTClientControl {
 			}
 		}
 
-		//make this send the info to InterthreadComm	
+//when you click the new game button it sends a 
+//message to the other player that you wish to have a new game.
 		private void newGame() {
 			if(!interComm.getNRCalled(0)) {
 				interComm.addMsgToSend(communication.cNew+pMSG.NLINE);
@@ -256,8 +274,10 @@ public class TTTClientControl {
 				JOptionPane.showMessageDialog(view.boardFrame, pMSG.NALREADYPRESSED);
 			}
 		}
-		
-		//make this send the info to InterthreadComm	
+
+//when the reset button is pressed it sends a message to the other player
+//requesting that you reset the game. Meaning that you'll reset the board and the
+//victories that each player has. A clean slate.
 		private void resetGame() {
 			if(!interComm.getNRCalled(1)) {
 				interComm.addMsgToSend(communication.cReset+pMSG.NLINE);
